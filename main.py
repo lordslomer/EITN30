@@ -88,9 +88,7 @@ if __name__ == "__main__":
 
     sending_thread.start()
     reciving_thread.start()
-
-    sending_thread.join()
-    reciving_thread.join()
+    
   except KeyboardInterrupt:
     print(" Keyboard Interrupt detected. Powering down radio.")
     rx.powerDown()
