@@ -3,21 +3,43 @@ from tuntap import TunTap
 import threading
 import argparse
 
+PSIZE = 30
+MAXBITS = 0xFFFF
 addresses = [b"B", b"M"]
 
 def tun_to_tx():
   while True:
-    packet = tun.read()
-    if len(packet):
-      tx.write(packet)
+    tun_packet = tun.read()
+    tun_packet_size = len(tun_packet)
+    
+    radio_packages = []
+
+    if tun_packet_size>0:
+      c = 1
+      while tun_packet:
+          if (tun_packet_size <= PSIZE):
+              c = MAXBITS
+          radio_packages.append(c.to_bytes(2, 'big') + tun_packet[:PSIZE])
+          tun_packet = tun_packet[PSIZE:]
+          tun_packet_size = len(tun_packet)
+          c += 1
+
+    for package in radio_packages:
+      tx.write(package)
 
 def rx_to_tun():
+  buffer = []
   while True:
     has_payload = rx.available()
     if has_payload:
       packet_size = rx.getPayloadSize()
       packet = rx.read(packet_size)
-      tun.write(packet)
+      c = int.from_bytes(packet[:2], 'big')
+      buffer.append(packet[2:])
+      if c == MAXBITS:
+        tun_packet = b''.join(buffer)
+        buffer.clear()
+        tun.write(tun_packet)
 
 if __name__ == "__main__":
   argparse = argparse.ArgumentParser(description='NRF24L01+ myG')
