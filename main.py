@@ -1,8 +1,23 @@
 from pyrf24  import RF24, RF24_PA_LOW, RF24_2MBPS
 from tuntap import TunTap
+import threading
 import argparse
 
 addresses = [b"B", b"M"]
+
+def tun_to_tx():
+  while True:
+    packet = tun.read()
+    if len(packet):
+      tx.write(packet)
+
+def rx_to_tun():
+  while True:
+    has_payload = rx.available()
+    if has_payload:
+      packet_size = rx.getPayloadSize()
+      packet = rx.read(packet_size)
+      tun.write(packet)
 
 if __name__ == "__main__":
   argparse = argparse.ArgumentParser(description='NRF24L01+ myG')
@@ -33,15 +48,24 @@ if __name__ == "__main__":
   tx.setDataRate(RF24_2MBPS)
 
   # Select sending and listening pipes
-  rx.openReadingPipe(1, addresses[not unit])
-  tx.openWritingPipe(addresses[unit])
-
+  rx.open_rx_pipe(1, addresses[not unit])
+  tx.open_tx_pipe(addresses[unit])
+  
+  # enable rx & tx mode
+  rx.listen = True
+  tx.listen = False
+  
   # Flush rx & tx queues
   rx.flush_rx()
   tx.flush_tx()
 
-  rx.print_pretty_details()
-  tx.print_pretty_details()
 
-  rx.powerDown()
-  tx.powerDown()
+  sending_thread = threading.Thread(target=tun_to_tx, args=())
+  reciving_thread = threading.Thread(target=rx_to_tun, args=())
+
+  sending_thread.start()
+  reciving_thread.start()
+
+  sending_thread.join()
+  reciving_thread.join()
+
