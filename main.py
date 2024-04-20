@@ -1,3 +1,4 @@
+import os
 from pyrf24  import RF24, RF24_PA_LOW, RF24_2MBPS
 from tuntap import TunTap
 import threading
@@ -52,6 +53,9 @@ if __name__ == "__main__":
     tun = TunTap(nic_type="Tun", nic_name="myG")
     tun.config(ip=f"10.0.0.{unit+1}", mask="255.255.255.0")
 
+    if unit == 1:
+      os.system("sudo ip route add 10.0.0.1 dev myG")
+
     # two radios, one for sending (spidev0) and one for reciving (spidev1)
     rx = RF24(17,0)
     tx = RF24(27,10)
@@ -66,8 +70,8 @@ if __name__ == "__main__":
     rx.setPALevel(RF24_PA_LOW)
     tx.setPALevel(RF24_PA_LOW)
     
-    rx.setRetries(15, 5)
-    tx.setRetries(15, 5)
+    # rx.setRetries(15, 5)
+    # tx.setRetries(15, 5)
 
     if unit == 0:
       rx.setChannel(100)
@@ -87,8 +91,8 @@ if __name__ == "__main__":
     rx.dynamic_payloads = True
     tx.dynamic_payloads = True
 
-    rx.setAutoAck(True)
-    tx.setAutoAck(True)
+    # rx.setAutoAck(True)
+    # tx.setAutoAck(True)
 
     # enable rx & tx mode
     rx.listen = True
