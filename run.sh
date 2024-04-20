@@ -3,7 +3,7 @@ if [ $1 = "base" ]
 then
   sudo ip link delete myG
   sudo iptables -F
-  sudo iptables -t nat -A POSTROUTING -o myG -j MASQUERADE
+  sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
   sudo iptables -A FORWARD -i eth0 -o myG -m state --state RELATED,ESTABLISHED -j ACCEPT
   sudo iptables -A FORWARD -i myG -o eth0 -j ACCEPT
   sudo python3 main.py --unit 0
