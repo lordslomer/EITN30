@@ -8,8 +8,5 @@ then
   sudo python3 main.py --unit 0
 elif [ $1 = "mobile" ]
 then
-  sudo iptables -F
-  sudo iptables -A INPUT -i myG -m state --state RELATED,ESTABLISHED -j ACCEPT
-  sudo iptables -A OUTPUT -o myG -m state --state NEW,RELATED,ESTABLISHED -j ACCEPT
   sudo python3 main.py --unit 1
 fi
