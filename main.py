@@ -33,7 +33,7 @@ def rx_to_tun():
   while True:
     has_payload = rx.available()
     if has_payload:
-      packet_size = rx.payload_size
+      packet_size = rx.get_dynamic_payload_size()
       packet = rx.read(packet_size)
       c = int.from_bytes(packet[:2], 'big')
       buffer.append(packet[2:])
@@ -70,8 +70,8 @@ if __name__ == "__main__":
     rx.setPALevel(RF24_PA_LOW)
     tx.setPALevel(RF24_PA_LOW)
     
-    rx.set_retries(5, 2)
-    tx.set_retries(5, 2)
+    rx.set_retries(15, 5)
+    tx.set_retries(15, 5)
 
     if unit == 0:
       rx.setChannel(100)
@@ -88,8 +88,8 @@ if __name__ == "__main__":
     rx.open_rx_pipe(1, addresses[not unit])
     tx.open_tx_pipe(addresses[unit])
     
-    # rx.dynamic_payloads = True
-    # tx.dynamic_payloads = True
+    rx.dynamic_payloads = True
+    tx.dynamic_payloads = True
 
     rx.set_auto_ack(True)
     tx.set_auto_ack(True)
