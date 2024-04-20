@@ -1,7 +1,7 @@
 import os
 from pyrf24  import RF24, RF24_PA_LOW, RF24_2MBPS
-from tuntap import TunTap
 import threading
+from pytun import TunTapDevice
 import argparse
 
 PSIZE = 30
@@ -10,7 +10,7 @@ addresses = [b"B", b"M"]
 
 def tun_to_tx():
   while True:
-    tun_packet = tun.read()
+    tun_packet = tun.read(tun.mtu)
     tun_packet_size = len(tun_packet)
     
     radio_packages = []
@@ -50,8 +50,13 @@ if __name__ == "__main__":
     unit = argparse.parse_args().unit
 
     # Create the virtual interface 
-    tun = TunTap(nic_type="Tun", nic_name="myG")
-    tun.config(ip=f"10.0.0.{unit+1}", mask="255.255.255.0")
+    
+    tun = TunTapDevice(name='myG')
+    tun.addr = f"10.0.0.{unit+1}"
+    tun.dstaddr = f"10.0.0.{(not unit)+1}"
+    tun.mask="255.255.255.0"
+    tun.mtu = 1500
+    tun.up()
 
     if unit == 1:
       os.system("sudo ip route add 10.0.0.1 dev myG")
