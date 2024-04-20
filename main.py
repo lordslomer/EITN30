@@ -50,11 +50,10 @@ if __name__ == "__main__":
     unit = argparse.parse_args().unit
 
     # Create the virtual interface 
-    
     tun = TunTapDevice(name='myG')
     tun.addr = f"10.0.0.{unit+1}"
     tun.dstaddr = f"10.0.0.{(not unit)+1}"
-    tun.mask="255.255.255.0"
+    tun.netmask="255.255.255.0"
     tun.mtu = 1500
     tun.up()
 
