@@ -139,6 +139,8 @@ if __name__ == "__main__":
 
     tun_sending_thread.start()
     tun_reading_thread.start()
+    tx_thread.start()
+    rx_thread.start()
     
   except KeyboardInterrupt:
     print(" Keyboard Interrupt detected. Powering down radio.")
