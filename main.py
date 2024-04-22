@@ -78,11 +78,11 @@ if __name__ == "__main__":
     tx.set_retries(15, 5)
 
     if unit == 0:
-      rx.setChannel(100)
-      tx.setChannel(76)
+      rx.setChannel(118)
+      tx.setChannel(107)
     else:
-      rx.setChannel(76)
-      tx.setChannel(100)
+      rx.setChannel(107)
+      tx.setChannel(118)
 
     # Set highest datarate
     rx.setDataRate(RF24_2MBPS)
