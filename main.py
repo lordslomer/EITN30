@@ -15,7 +15,7 @@ out_buffer = []
 
 def tun_receiving():
   while True:
-    tun_packet = tun.read()
+    tun_packet = tun.read(tun.mtu)
     with out_lock:
       out_buffer.append(tun_packet)
       out_lock.notify_all()
