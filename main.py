@@ -57,8 +57,8 @@ if __name__ == "__main__":
     tun.mtu = 1500
     tun.up()
 
-    if unit == 1:
-      os.system("sudo ip route add 10.0.0.1 dev myG")
+    # if unit == 1:
+    #   os.system("sudo ip route add 10.0.0.1 dev myG")
 
     # two radios, one for sending (spidev0) and one for reciving (spidev1)
     rx = RF24(17,0)
