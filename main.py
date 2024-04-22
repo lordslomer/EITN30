@@ -8,13 +8,28 @@ PSIZE = 30
 MAXBITS = 0xFFFF
 addresses = [b"B", b"M"]
 
-def tun_to_tx():
+in_lock = threading.Condition()
+in_buffer = []
+out_lock = threading.Condition()
+out_buffer = []
+
+def tun_receiving():
   while True:
     tun_packet = tun.read(tun.mtu)
-    tun_packet_size = len(tun_packet)
-    
-    radio_packages = []
+    with out_lock:
+      out_buffer.append(tun_packet)
+      out_lock.notify_all()
 
+def tx_sending():
+  while True:
+    with out_lock:
+      while len(out_buffer) <= 0:
+        out_lock.wait()
+      tun_packet = out_buffer.pop()
+    
+    # Fragmentation
+    tun_packet_size = len(tun_packet)
+    radio_packages = []
     if tun_packet_size>0:
       c = 1
       while tun_packet:
@@ -28,7 +43,15 @@ def tun_to_tx():
     for package in radio_packages:
       tx.write(package)
 
-def rx_to_tun():
+def tun_sending():
+  while True:
+    with in_lock:
+      while len(in_buffer) <= 0:
+        in_lock.wait()
+      tun_packet = in_buffer.pop()
+    tun.write(tun_packet)
+
+def rx_receiving():
   buffer = []
   while True:
     has_payload = rx.available()
@@ -40,7 +63,9 @@ def rx_to_tun():
       if c == MAXBITS:
         tun_packet = b''.join(buffer)
         buffer.clear()
-        tun.write(tun_packet)
+        with in_lock:
+          in_buffer.append(tun_packet)
+          in_lock.notify_all()
 
 if __name__ == "__main__":
   try:
@@ -107,11 +132,13 @@ if __name__ == "__main__":
     tx.flush_tx()
 
 
-    sending_thread = threading.Thread(target=tun_to_tx, args=())
-    reciving_thread = threading.Thread(target=rx_to_tun, args=())
+    tun_reading_thread = threading.Thread(target=tun_receiving, args=())
+    tx_thread = threading.Thread(target=tx_sending, args=())
+    tun_sending_thread = threading.Thread(target=tun_sending, args=())
+    rx_thread = threading.Thread(target=rx_receiving, args=())
 
-    sending_thread.start()
-    reciving_thread.start()
+    tun_sending_thread.start()
+    tun_reading_thread.start()
     
   except KeyboardInterrupt:
     print(" Keyboard Interrupt detected. Powering down radio.")
