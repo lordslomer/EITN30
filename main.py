@@ -1,17 +1,22 @@
-import os
 from pyrf24  import RF24, RF24_PA_LOW, RF24_2MBPS
 import threading
 from pytun import TunTapDevice
 import argparse
 
-PSIZE = 30
-MAXBITS = 0xFFFF
+PSIZE = 31
+MAXBITS = 0xFF
 addresses = [b"B", b"M"]
 
 in_lock = threading.Condition()
 in_buffer = []
 out_lock = threading.Condition()
 out_buffer = []
+
+# Code for printing package:
+# print("\n"," ".join(map(format_hex,list(tun_packet))))
+
+def format_hex(int):
+  return format(int,'02x')
 
 def tun_receiving():
   while True:
@@ -35,11 +40,10 @@ def tx_sending():
       while tun_packet:
           if (tun_packet_size <= PSIZE):
               c = MAXBITS
-          radio_packages.append(c.to_bytes(2, 'big') + tun_packet[:PSIZE])
+          radio_packages.append(c.to_bytes(1, 'big') + tun_packet[:PSIZE])
           tun_packet = tun_packet[PSIZE:]
           tun_packet_size = len(tun_packet)
           c += 1
-
     for package in radio_packages:
       tx.write(package)
 
@@ -56,9 +60,10 @@ def rx_receiving():
   while True:
     has_payload = rx.available()
     if has_payload:
-      packet_size = rx.get_dynamic_payload_size()
+      packet_size = rx.payload_size
       packet = rx.read(packet_size)
-      c = int.from_bytes(packet[:2], 'big')
+      c = int.from_bytes(packet[:1], 'big')
+      print(packet[:1], c)
       buffer.append(packet[2:])
       if c == MAXBITS:
         tun_packet = b''.join(buffer)
@@ -115,8 +120,8 @@ if __name__ == "__main__":
     rx.open_rx_pipe(1, addresses[not unit])
     tx.open_tx_pipe(addresses[unit])
     
-    rx.dynamic_payloads = True
-    tx.dynamic_payloads = True
+    rx.dynamic_payloads = False
+    tx.dynamic_payloads = False
 
     rx.set_auto_ack(True)
     tx.set_auto_ack(True)
