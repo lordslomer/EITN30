@@ -95,8 +95,8 @@ if __name__ == "__main__":
     rx.setPALevel(RF24_PA_LOW)
     tx.setPALevel(RF24_PA_LOW)
     
-    rx.set_retries(15, 5)
-    tx.set_retries(15, 5)
+    # rx.set_retries(15, 5)
+    # tx.set_retries(15, 5)
 
     if unit == 0:
       rx.setChannel(118)
@@ -113,11 +113,11 @@ if __name__ == "__main__":
     rx.open_rx_pipe(1, addresses[not unit])
     tx.open_tx_pipe(addresses[unit])
     
-    rx.dynamic_payloads = True
-    tx.dynamic_payloads = True
+    rx.dynamic_payloads = False
+    tx.dynamic_payloads = False
 
-    rx.set_auto_ack(True)
-    tx.set_auto_ack(True)
+    rx.set_auto_ack(False)
+    tx.set_auto_ack(False)
 
     # enable rx & tx mode
     rx.listen = True
