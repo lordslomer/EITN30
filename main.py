@@ -12,12 +12,6 @@ in_buffer = []
 out_lock = threading.Condition()
 out_buffer = []
 
-# Code for printing package:
-# print("\n"," ".join(map(format_hex,list(tun_packet))))
-
-def format_hex(int):
-  return format(int,'02x')
-
 def tun_receiving():
   while True:
     tun_packet = tun.read(tun.mtu)
@@ -60,11 +54,10 @@ def rx_receiving():
   while True:
     has_payload = rx.available()
     if has_payload:
-      packet_size = rx.payload_size
+      packet_size = rx.get_dynamic_payload_size()
       packet = rx.read(packet_size)
       c = int.from_bytes(packet[:1], 'big')
-      print(packet[:1], c)
-      buffer.append(packet[2:])
+      buffer.append(packet[1:])
       if c == MAXBITS:
         tun_packet = b''.join(buffer)
         buffer.clear()
@@ -120,8 +113,8 @@ if __name__ == "__main__":
     rx.open_rx_pipe(1, addresses[not unit])
     tx.open_tx_pipe(addresses[unit])
     
-    rx.dynamic_payloads = False
-    tx.dynamic_payloads = False
+    rx.dynamic_payloads = True
+    tx.dynamic_payloads = True
 
     rx.set_auto_ack(True)
     tx.set_auto_ack(True)
