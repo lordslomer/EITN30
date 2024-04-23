@@ -54,7 +54,7 @@ def rx_receiving():
   while True:
     has_payload = rx.available()
     if has_payload:
-      packet_size = rx.get_dynamic_payload_size()
+      packet_size = rx.payload_size
       packet = rx.read(packet_size)
       c = int.from_bytes(packet[:1], 'big')
       buffer.append(packet[1:])
