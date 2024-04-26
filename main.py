@@ -3,28 +3,49 @@ import threading
 from multiprocessing import Queue
 from pytun import TunTapDevice
 import argparse
+import time 
 
 PSIZE = 31
 MAXBITS = 0xFF
 addresses = [b"B", b"M"]
 
-# in_lock = threading.Condition()
-# in_buffer = []
-# out_lock = threading.Condition()
-# out_buffer = []
-
-in_buffer = Queue()
-out_buffer = Queue()
+in_lock = threading.Condition()
+in_buffer = []
+out_lock = threading.Condition()
+out_buffer = []
 
 def tun_receiving():
+  t0 = time.time()
+  ctn = 0
   while True:
     tun_packet = tun.read(tun.mtu)
-    out_buffer.put(tun_packet)
+    with out_lock:
+      out_buffer.append(tun_packet)
+      out_lock.notify_all()
+    t1 = time.time()
+    time_durr = t1-t0
+    ctn+=1
+    if time_durr > 1: 
+      print("inflöde",ctn/time_durr, time_durr, ctn)
+      t0 = t1 
+      ctn = 0
 
 def tx_sending():
+  t0 = time.time()
+  ctn = 0
   while True:
-    tun_packet = out_buffer.get()
-    
+    with out_lock:
+      while len(out_buffer) <= 0:
+        out_lock.wait()
+      tun_packet = out_buffer.pop()
+    t1 = time.time()
+    time_durr = t1-t0
+    ctn+=1
+    if time_durr > 1: 
+      print("utflöde",ctn/time_durr, time_durr, ctn)
+      t0 = t1 
+      ctn = 0
+
     # Fragmentation
     tun_packet_size = len(tun_packet)
     if tun_packet_size>0:
@@ -32,14 +53,17 @@ def tx_sending():
       while tun_packet:
           if (tun_packet_size <= PSIZE):
               c = MAXBITS
-          tx.write_fast(c.to_bytes(1, 'big') + tun_packet[:PSIZE])
+          tx.write(c.to_bytes(1, 'big') + tun_packet[:PSIZE])
           tun_packet = tun_packet[PSIZE:]
           tun_packet_size = len(tun_packet)
           c += 1
 
 def tun_sending():
   while True:
-    tun_packet = in_buffer.get()
+    with in_lock:
+      while len(in_buffer) <= 0:
+        in_lock.wait()
+      tun_packet = in_buffer.pop()
     tun.write(tun_packet)
 
 def rx_receiving():
@@ -47,14 +71,17 @@ def rx_receiving():
   while True:
     has_payload = rx.available()
     if has_payload:
-      packet_size = rx.payload_size
+      packet_size = rx.get_dynamic_payload_size()
       packet = rx.read(packet_size)
       c = int.from_bytes(packet[:1], 'big')
       buffer.append(packet[1:])
       if c == MAXBITS:
         tun_packet = b''.join(buffer)
         buffer.clear()
-        in_buffer.put(tun_packet)
+        with in_lock:
+          in_buffer.append(tun_packet)
+          in_lock.notify_all()
+
 
 if __name__ == "__main__":
   try:
@@ -104,8 +131,8 @@ if __name__ == "__main__":
     rx.open_rx_pipe(1, addresses[not unit])
     tx.open_tx_pipe(addresses[unit])
     
-    rx.dynamic_payloads = False
-    tx.dynamic_payloads = False
+    rx.dynamic_payloads = True
+    tx.dynamic_payloads = True
 
     rx.set_auto_ack(True)
     tx.set_auto_ack(True)
