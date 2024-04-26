@@ -27,18 +27,15 @@ def tx_sending():
     
     # Fragmentation
     tun_packet_size = len(tun_packet)
-    radio_packages = []
     if tun_packet_size>0:
       c = 1
       while tun_packet:
           if (tun_packet_size <= PSIZE):
               c = MAXBITS
-          radio_packages.append(c.to_bytes(1, 'big') + tun_packet[:PSIZE])
+          tx.write_fast(c.to_bytes(1, 'big') + tun_packet[:PSIZE])
           tun_packet = tun_packet[PSIZE:]
           tun_packet_size = len(tun_packet)
           c += 1
-    for package in radio_packages:
-      tx.write(package)
 
 def tun_sending():
   while True:
@@ -89,8 +86,8 @@ if __name__ == "__main__":
     rx.setPALevel(RF24_PA_LOW)
     tx.setPALevel(RF24_PA_LOW)
     
-    # rx.set_retries(15, 5)
-    # tx.set_retries(15, 5)
+    rx.set_retries(10, 5)
+    tx.set_retries(10, 5)
 
     if unit == 0:
       rx.setChannel(118)
@@ -110,8 +107,8 @@ if __name__ == "__main__":
     rx.dynamic_payloads = False
     tx.dynamic_payloads = False
 
-    rx.set_auto_ack(False)
-    tx.set_auto_ack(False)
+    rx.set_auto_ack(True)
+    tx.set_auto_ack(True)
 
     # enable rx & tx mode
     rx.listen = True
