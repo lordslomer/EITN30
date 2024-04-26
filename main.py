@@ -1,5 +1,6 @@
 from pyrf24  import RF24, RF24_PA_LOW, RF24_2MBPS
 import threading
+from multiprocessing import Queue
 from pytun import TunTapDevice
 import argparse
 
@@ -7,24 +8,22 @@ PSIZE = 31
 MAXBITS = 0xFF
 addresses = [b"B", b"M"]
 
-in_lock = threading.Condition()
-in_buffer = []
-out_lock = threading.Condition()
-out_buffer = []
+# in_lock = threading.Condition()
+# in_buffer = []
+# out_lock = threading.Condition()
+# out_buffer = []
+
+in_buffer = Queue()
+out_buffer = Queue()
 
 def tun_receiving():
   while True:
     tun_packet = tun.read(tun.mtu)
-    with out_lock:
-      out_buffer.append(tun_packet)
-      out_lock.notify_all()
+    out_buffer.put(tun_packet)
 
 def tx_sending():
   while True:
-    with out_lock:
-      while len(out_buffer) <= 0:
-        out_lock.wait()
-      tun_packet = out_buffer.pop()
+    tun_packet = out_buffer.get()
     
     # Fragmentation
     tun_packet_size = len(tun_packet)
@@ -43,10 +42,7 @@ def tx_sending():
 
 def tun_sending():
   while True:
-    with in_lock:
-      while len(in_buffer) <= 0:
-        in_lock.wait()
-      tun_packet = in_buffer.pop()
+    tun_packet = in_buffer.get()
     tun.write(tun_packet)
 
 def rx_receiving():
@@ -61,9 +57,7 @@ def rx_receiving():
       if c == MAXBITS:
         tun_packet = b''.join(buffer)
         buffer.clear()
-        with in_lock:
-          in_buffer.append(tun_packet)
-          in_lock.notify_all()
+        in_buffer.put(tun_packet)
 
 if __name__ == "__main__":
   try:
