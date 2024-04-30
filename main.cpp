@@ -141,7 +141,7 @@ void rx_receiving(RF24 &rx)
         buffer.clear();
       }
     }
-    usleep(1000); // Sleep for a millisecond
+    usleep(100); // Sleep for a millisecond
   }
 }
 
