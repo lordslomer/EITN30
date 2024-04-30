@@ -3,7 +3,6 @@ import threading
 from multiprocessing import Queue
 from pytun import TunTapDevice
 import argparse
-import time 
 
 PSIZE = 31
 MAXBITS = 0xFF
@@ -15,36 +14,20 @@ out_lock = threading.Condition()
 out_buffer = []
 
 def tun_receiving():
-  t0 = time.time()
-  ctn = 0
   while True:
     tun_packet = tun.read(tun.mtu)
     with out_lock:
       out_buffer.append(tun_packet)
       out_lock.notify_all()
-    t1 = time.time()
-    time_durr = t1-t0
-    ctn+=1
-    if time_durr > 1: 
-      print("inflöde",ctn/time_durr, time_durr, ctn)
-      t0 = t1 
-      ctn = 0
+
 
 def tx_sending():
-  t0 = time.time()
-  ctn = 0
   while True:
     with out_lock:
       while len(out_buffer) <= 0:
         out_lock.wait()
       tun_packet = out_buffer.pop()
-    t1 = time.time()
-    time_durr = t1-t0
-    ctn+=1
-    if time_durr > 1: 
-      print("utflöde",ctn/time_durr, time_durr, ctn)
-      t0 = t1 
-      ctn = 0
+
 
     # Fragmentation
     tun_packet_size = len(tun_packet)
