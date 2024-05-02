@@ -2,3 +2,4 @@
 /pyRF24
 .vscode
 main
+__pycache__/*
