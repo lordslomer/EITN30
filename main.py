@@ -1,3 +1,4 @@
+import time
 from pyrf24  import RF24, RF24_PA_LOW, RF24_2MBPS
 import threading
 from multiprocessing import Queue
@@ -64,6 +65,7 @@ def rx_receiving():
         with in_lock:
           in_buffer.append(tun_packet)
           in_lock.notify_all()
+    time.sleep(1/10000)
 
 
 if __name__ == "__main__":
