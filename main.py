@@ -9,8 +9,8 @@ PSIZE = 31
 MAXBITS = 0xFF
 addresses = [b"B", b"M"]
 
-in_buffer = Queue()
-out_buffer = Queue()
+in_buffer = Queue("in")
+out_buffer = Queue("out")
 
 
 def tun_receiving():
