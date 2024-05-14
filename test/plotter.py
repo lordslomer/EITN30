@@ -1,12 +1,13 @@
-import json 
+import json
+import os 
 import matplotlib.pyplot as plt
 
 # Read client result data
-with open('results/iperf3_client_results.txt') as f: 
+with open(os.path.join(os.path.dirname(__file__),'results/iperf3_client_results.txt')) as f: 
     client_dict = dict(json.loads(f.read()))  
 
 # Read server result data
-with open('results/iperf3_server_results.txt') as f: 
+with open(os.path.join(os.path.dirname(__file__),'results/iperf3_server_results.txt')) as f: 
     server_dict = dict(json.loads(f.read()) )
 
 print("Plotting iperf3 test results...")
