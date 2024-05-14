@@ -1,5 +1,4 @@
-import json
-import os
+import matplotlib.pyplot as plt
 import iperf3
 
 SERVER_ADDR = '10.0.0.1'
@@ -13,7 +12,7 @@ PROTOCOL = 'udp'
 # Help determine the list of speeds/loads to be tested
 LOWEST_TEST_SPEED = 2000
 NBR_OF_TESTS = 24
-MAX_CAPACITY = 382000
+MAX_CAPACITY = 400000
 
 # performs a iperf3 udp test as a client with the options above
 def run_test(load):
@@ -29,9 +28,7 @@ def run_test(load):
 # The interval step to take between loads
 speed_step = (MAX_CAPACITY-LOWEST_TEST_SPEED)/((NBR_OF_TESTS*2)/3)
 
-# Dict that stores the traffic intensity for each test
-archive = {}
-
+pairs = []
 for i in range(NBR_OF_TESTS):
     load = int(LOWEST_TEST_SPEED + i * speed_step)
     results = run_test(load)
@@ -40,16 +37,25 @@ for i in range(NBR_OF_TESTS):
         print(results.error)
     else:
         rho = results.bps / MAX_CAPACITY
-        archive[results.time] = rho
-        print(f'Test {i+1} completed for offered load {load} bps (ρ = {rho:.2f}):')
+        server_load = results.json['end']['sum_received']['bits_per_second']/1000
+        pairs.append((server_load,rho))
+        
+        print(f'Test {i+1} completed for offered load {load/1000:.2f} Kbps (ρ = {rho:.2f}):')
         print(f'  Started at:       {results.time}')
         print(f'  Test duration:    {results.seconds:.2f} seconds')
         print(f'  Packet loss (%):  {results.lost_percent}')
         print(f'  Jitter (ms):      {results.jitter_ms:.4f}')
         print(f'  Client (Kbps):    {results.kbps:.2f}')
         print("")
-        
-# Save the archive dict into a file for plotting
-if len(archive) == NBR_OF_TESTS:
-    with open(os.path.join(os.path.dirname(__file__),'results/iperf3_client_results.txt'), 'w') as client_results: 
-        client_results.write(json.dumps(archive))
+
+# Plot
+throughput, rho = zip(*pairs)
+plt.figure(figsize=(8, 6))
+plt.plot(rho, throughput, marker='o', linestyle='-', color='coral')
+plt.title('Throughput vs. Traffic Intensity (ρ)')
+plt.xlabel('Traffic Intensity (ρ)')
+plt.ylabel('Throughput (Kbps)')
+plt.grid(True)
+path = 'plots/throughput-rho.pdf'
+plt.savefig(path)
+print(f"Plot saved to {path}")
