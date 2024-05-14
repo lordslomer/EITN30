@@ -19,8 +19,8 @@ while True:
         print(f'  Took {results.seconds:.2f} seconds started at {results.time}')
         print(f'  Packet loss (%): {results.lost_percent}')
         print(f'  Jitter (ms): {results.jitter_ms:.4f}')
-        server_load = results.json['end']['sum_received']['bits_per_second']
-        print(f'  server bps: {server_load:.2f}')
+        server_load = results.json['end']['sum_received']['bits_per_second']/1000
+        print(f'  server (Kbps): {server_load:.2f}')
         print("")
         archive[results.time] = server_load
         
