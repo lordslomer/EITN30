@@ -1,7 +1,7 @@
 import socket
 
 SERVER_ADDR = '10.0.0.1'  # Listen on all interfaces
-PORT = 12739
+PORT = 12839
 BUFFER_SIZE = 1448
 
 def run_server():

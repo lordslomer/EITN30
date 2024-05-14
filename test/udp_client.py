@@ -3,7 +3,7 @@ import time
 import json
 
 SERVER_ADDR = '10.0.0.1'
-PORT = 12739
+PORT = 12839
 PACKET_SIZE = 1448
 TEST_DURATION = 10  # seconds
 MAX_CAPACITY = 382000  # bits per second
