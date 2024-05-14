@@ -1,4 +1,5 @@
 import json
+import os
 import iperf3
 
 SERVER_ADDR = '10.0.0.1'
@@ -41,13 +42,14 @@ for i in range(NBR_OF_TESTS):
         rho = results.bps / MAX_CAPACITY
         archive[results.time] = rho
         print(f'Test {i+1} completed for offered load {load} bps (ρ = {rho:.2f}):')
-        print(f'  Took {results.seconds:.2f} seconds started at {results.time}')
-        print(f'  Packet loss (%): {results.lost_percent}')
-        print(f'  Jitter (ms): {results.jitter_ms:.4f}')
-        print(f'  client (Kbps):: {results.bps:.2f}')
+        print(f'  Started at:       {results.time}')
+        print(f'  Test duration:    {results.seconds:.2f} seconds')
+        print(f'  Packet loss (%):  {results.lost_percent}')
+        print(f'  Jitter (ms):      {results.jitter_ms:.4f}')
+        print(f'  Client (Kbps):    {results.kbps:.2f}')
         print("")
         
 # Save the archive dict into a file for plotting
 if len(archive) == NBR_OF_TESTS:
-    with open('results/iperf3_client_results.txt', 'w') as client_results: 
+    with open(os.path.join(os.path.dirname(__file__),'results/iperf3_client_results.txt'), 'w') as client_results: 
         client_results.write(json.dumps(archive))
