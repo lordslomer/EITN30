@@ -9,10 +9,10 @@ then
 elif [ $1 = "mobile" ]
 then
   sudo python3 src/main.py --unit 1
-elif [ $1 = "iperf3 s"]
+elif [ $1 = "iperf3 s" ]
 then
   sudo python3 test/iperf3_server.py 
-elif [ $1 = "iperf3 c"]
+elif [ $1 = "iperf3 c" ]
 then
   sudo python3 test/iperf3_client.py 
 fi
