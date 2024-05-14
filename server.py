@@ -1,49 +1,28 @@
-import socket
-import time
+import json
+import iperf3
 
-# Set the server address and port
-socket_addr = '10.0.0.1'
-socket_port = 12739
+SERVER_ADDR = '10.0.0.1'
+PORT = 12739
 
-# Create a UDP socket
-socket_server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-socket_server.bind((socket_addr, socket_port))
-print(f"Server listening at {socket_addr}:{socket_port}")
+server = iperf3.Server()
+server.bind_address = SERVER_ADDR
+server.port = PORT
 
+archive = {}
 
-def time_in_micro():
-    return int(time.time() * 1000000)
-
-def micro_to_sec(micro):
-    return micro / 1000000
-    
-
-packet_size = 1024
-total_packets = 5
-service_times = []
-packge_recv = [0 for _ in range(total_packets)]
-end_payload = b"X"*packet_size
-
-def close():
-    socket_server.close()
-    nbr_packets_recv = sum(packge_recv)
-    print(f"Server shutdown. Total packets received: {nbr_packets_recv} / {total_packets} - {(nbr_packets_recv/total_packets)*100:.2f}%")
-    service_time_avg = sum(service_times)/len(service_times)
-    print(micro_to_sec(service_time_avg))
-
-try:
-    while True:
-        # Receive packets
-        message, client_addr = socket_server.recvfrom(packet_size) 
-
-        if message == end_payload:
-            close()
-            break
-        else:
-            timestamp = int.from_bytes(message[:8], 'big')
-            service_times.append(time_in_micro() - timestamp)
-            index = int.from_bytes(message[8:], 'big')
-            packge_recv[index] = 1
-
-except KeyboardInterrupt:
-    close()
+while True:
+    results = server.run()
+    if results.error:
+        print(results.error)
+    else:
+        print('Test completed:')
+        print(f'  Took {results.seconds:.2f} seconds started at {results.time}')
+        print(f'  Packet loss (%): {results.lost_percent}')
+        print(f'  Jitter (ms): {results.jitter_ms:.4f}')
+        server_load = results.json['end']['sum_received']['bits_per_second']
+        print(f'  server bps: {server_load:.2f}')
+        print("")
+        archive[results.time] = server_load
+        
+        with open('iperf3_server_results.txt', 'w') as server_results: 
+            server_results.write(json.dumps(archive))
