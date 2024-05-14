@@ -17,7 +17,7 @@ class Queue:
     durr = t1 - self.t0_in
     self.ctn_in+=1
     if durr >= 1:
-      # print(self.name, "inflöde :",self.ctn_in/durr)
+      # print(self.name, f"inflöde : {self.ctn_in/durr:.2f}")
       self.t0_in = t1
       self.ctn_in = 0
 
@@ -28,7 +28,7 @@ class Queue:
     durr = t1 - self.t0_out
     self.ctn_out+=1
     if durr >= 1:
-      # print(self.name, "utflöde :", self.ctn_out/durr)
+      # print(self.name, f"utflöde : {self.ctn_out/durr:.2f}\n")
       self.t0_out = t1
       self.ctn_out = 0
     return temp
