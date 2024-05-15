@@ -12,6 +12,7 @@ PROTOCOL = 'udp'
 # Help determine the list of speeds/loads to be tested
 LOWEST_TEST_SPEED = 2000
 NBR_OF_TESTS = 24
+NONE_OVERLOADED_RATIO = 2/3
 MAX_CAPACITY = 400000
 
 # performs a iperf3 udp test as a client with the options above
@@ -26,11 +27,11 @@ def run_test(load):
     return client.run()
 
 # The interval step to take between loads
-speed_step = (MAX_CAPACITY-LOWEST_TEST_SPEED)/((NBR_OF_TESTS*2)/3)
+speed_step = (MAX_CAPACITY-LOWEST_TEST_SPEED)/(NBR_OF_TESTS * NONE_OVERLOADED_RATIO)
 
 pairs = []
-for i in range(NBR_OF_TESTS):
-    load = int(LOWEST_TEST_SPEED + i * speed_step)
+for test in range(NBR_OF_TESTS):
+    load = int(LOWEST_TEST_SPEED + test * speed_step)
     results = run_test(load)
 
     if results.error:
@@ -40,7 +41,7 @@ for i in range(NBR_OF_TESTS):
         server_load = results.json['end']['sum_received']['bits_per_second']/1000
         pairs.append((server_load,rho))
         
-        print(f'Test {i+1} completed for offered load {load/1000:.2f} Kbps (ρ = {rho:.2f}):')
+        print(f'Test {test+1} completed for tested load {load/1000:.2f} Kbps (ρ = {rho:.2f}):')
         print(f'  Started at:       {results.time}')
         print(f'  Test duration:    {results.seconds:.2f} seconds')
         print(f'  Packet loss (%):  {results.lost_percent}')
