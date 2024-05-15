@@ -1,18 +1,31 @@
 import socket
+import time
 
-SERVER_ADDR = '10.0.0.1'  # Listen on all interfaces
-PORT = 12839
-BUFFER_SIZE = 1448
+# Set the server address and port
+SERVER_ADDR = '10.0.0.1'
+PACKET_SIZE = 1448
+PORT = 12739
 
-def run_server():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind((SERVER_ADDR, PORT))
-    print(f"Server listening on {SERVER_ADDR}:{PORT}")
+# Create a UDP socket
+socket_server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+socket_server.bind((SERVER_ADDR, PORT))
+print(f"Server listening at {SERVER_ADDR}:{PORT}")
 
+# Helper function to get time in micro seconds
+def time_in_micro():
+    return int(time.time() * 1000000)
+
+# Helper function micro seconds -> seconds
+def micro_to_sec(micro):
+    return micro / 1000000
+
+
+try:
     while True:
-        data, addr = sock.recvfrom(BUFFER_SIZE)
-        if data:
-            sock.sendto(data, addr)  # Send acknowledgment
+        # Receive packets
+        message, client_addr = socket_server.recv(PACKET_SIZE) 
+        timestamp = int.from_bytes(message[:8], 'big')
+        rtt = time_in_micro() - timestamp
 
-if __name__ == '__main__':
-    run_server()
+except KeyboardInterrupt:
+    socket_server.close()
