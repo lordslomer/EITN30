@@ -53,7 +53,7 @@ def rx_receiving():
         tun_packet = b''.join(buffer)
         buffer.clear()
         in_buffer.put(tun_packet)
-    time.sleep(1/10000)
+    time.sleep(1/7900)
 
 
 if __name__ == "__main__":
@@ -86,8 +86,8 @@ if __name__ == "__main__":
     rx.setPALevel(RF24_PA_LOW)
     tx.setPALevel(RF24_PA_LOW)
     
-    rx.set_retries(10, 5)
-    tx.set_retries(10, 5)
+    rx.set_retries(1, 2)
+    tx.set_retries(1, 2)
 
     if unit == 0:
       rx.setChannel(118)
