@@ -58,7 +58,7 @@ for test in range(NBR_OF_TESTS):
 
     avg_rtt = run_latency(load)
 
-    pairs.append((avg_rtt,rho))
+    pairs.append((avg_rtt/1000,rho))
     print(f"Test done with an avg latency: {avg_rtt/1000:.2f} ms\n")
 
 # Plot
@@ -67,7 +67,7 @@ plt.figure(figsize=(8, 6))
 plt.plot(rho, latency, marker='o', linestyle='-', color='coral')
 plt.title('Latency vs. Traffic Intensity (ρ)')
 plt.xlabel('Traffic Intensity (ρ)')
-plt.ylabel('Latency (Kbps)')
+plt.ylabel('Latency (ms)')
 plt.grid(True)
 path = 'plots/latency-rho.pdf'
 plt.savefig(path)

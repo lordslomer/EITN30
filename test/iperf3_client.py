@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
+import socket
 import iperf3
+import time
 
 SERVER_ADDR = '10.0.0.1'
 PORT = 12739
@@ -16,7 +18,7 @@ NONE_OVERLOADED_RATIO = 2/3
 MAX_CAPACITY = 400000
 
 # performs a iperf3 udp test as a client with the options above
-def run_test(load):
+def run_throughput(load):
     client = iperf3.Client()
     client.server_hostname = SERVER_ADDR
     client.port = PORT
@@ -32,7 +34,7 @@ speed_step = (MAX_CAPACITY-LOWEST_TEST_SPEED)/(NBR_OF_TESTS * NONE_OVERLOADED_RA
 pairs = []
 for test in range(NBR_OF_TESTS):
     load = int(LOWEST_TEST_SPEED + test * speed_step)
-    results = run_test(load)
+    results = run_throughput(load)
 
     if results.error:
         print(results.error)
