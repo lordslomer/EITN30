@@ -1,64 +1,76 @@
+import matplotlib.pyplot as plt
 import socket
 import time
-import json
 
+# Server address and port
 SERVER_ADDR = '10.0.0.1'
-PORT = 12839
-PACKET_SIZE = 1448
-TEST_DURATION = 10  # seconds
-MAX_CAPACITY = 382000  # bits per second
-LOWEST_TEST_SPEED = 2000  # bits per second
-NUM_PACKETS = 100
+PACKET_SIZE = 1448       # package size in bits
+TEST_DURATION = 10
+PORT = 12739
 
-def run_test(load):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    server_address = (SERVER_ADDR, PORT)
-    message = b'x' * PACKET_SIZE
+# Help determine the list of speeds/loads to be tested
+LOWEST_TEST_SPEED = 2000
+NBR_OF_TESTS = 24
+NONE_OVERLOADED_RATIO = 2/3
+MAX_CAPACITY = 400000
 
-    rtt_list = []
-    sent_packets = 0
+# Create a UDP socket
+socket_con = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+socket_con.settimeout(30)
 
+# Helper function to get time in micro seconds
+def time_in_micro():
+    return int(time.time() * 1000000)
+
+def run_latency(load):
+    # Calculate the time interval between packets to maintain the target rate
+    time_per_packet = (PACKET_SIZE * 8) / load
+
+    # Track cumulative ideal send time
     start_time = time.time()
-    while time.time() - start_time < TEST_DURATION:
-        sent_time = time.time()
-        sock.sendto(message, server_address)
-        try:
-            sock.settimeout(1)
-            data, server = sock.recvfrom(PACKET_SIZE)
-            recv_time = time.time()
-            rtt = (recv_time - sent_time) * 1000  # Convert to milliseconds
-            rtt_list.append(rtt)
-        except socket.timeout:
-            pass
-        sent_packets += 1
+    cumulative_ideal_time = start_time
 
-    sock.close()
-    return rtt_list, sent_packets
+    while (time.time() - start_time) <= TEST_DURATION:
+        # Construct the payload
+        payload =  time_in_micro().to_bytes(8,'big') + b"X" * (PACKET_SIZE - 8)
+        socket_con.sendto(payload, (SERVER_ADDR, PORT))
 
-def calculate_rho(sent_packets, load):
-    effective_load = sent_packets * PACKET_SIZE * 8 / TEST_DURATION  # bits per second
-    rho = effective_load / MAX_CAPACITY
-    return rho
+        # Update the ideal time
+        cumulative_ideal_time += time_per_packet
+        sleep_time = cumulative_ideal_time - time.time()
 
-def main():
-    speed_step = (MAX_CAPACITY - LOWEST_TEST_SPEED) / 16
-    loads = [int(LOWEST_TEST_SPEED + i * speed_step) for i in range(24)]
+        if sleep_time > 0: 
+            time.sleep(sleep_time)
 
-    archive = {}
+    end_payload = b"E" * 8 + b"X" * (PACKET_SIZE - 8)
+    socket_con.sendto(end_payload, (SERVER_ADDR, PORT))
+    avg_rtt = int.from_bytes(socket_con.recv(4), 'big')
+    return avg_rtt
 
-    for load in loads:
-        rtt_list, sent_packets = run_test(load)
-        if rtt_list:
-            avg_rtt = sum(rtt_list) / len(rtt_list)
-        else:
-            avg_rtt = float('inf')
-        rho = calculate_rho(sent_packets, load)
-        print(f'Test completed for offered load {load} bps (ρ = {rho:.2f}):')
-        print(f'  Average RTT (ms): {avg_rtt:.2f}')
-        archive[time.time()] = {'rho': rho, 'avg_rtt': avg_rtt}
+# The interval step to take between loads
+speed_step = (MAX_CAPACITY-LOWEST_TEST_SPEED)/(NBR_OF_TESTS * NONE_OVERLOADED_RATIO)
 
-    with open('udp_rtt_results.txt', 'w') as results_file:
-        results_file.write(json.dumps(archive, indent=4))
+pairs = []
+for test in range(NBR_OF_TESTS):
+    load = int(LOWEST_TEST_SPEED + test * speed_step)
+    rho = load/MAX_CAPACITY
+    print(f"Begin Test {load/1000:.2f} Kbps (ρ = {rho:.2f})")
 
-if __name__ == '__main__':
-    main()
+    avg_rtt = run_latency(load)
+
+    pairs.append((avg_rtt,rho))
+    print(f"Test done with an avg latency: {avg_rtt/1000:.2f} ms\n")
+
+# Plot
+latency, rho = zip(*pairs)
+plt.figure(figsize=(8, 6))
+plt.plot(rho, latency, marker='o', linestyle='-', color='coral')
+plt.title('Latency vs. Traffic Intensity (ρ)')
+plt.xlabel('Traffic Intensity (ρ)')
+plt.ylabel('Latency (Kbps)')
+plt.grid(True)
+path = 'plots/latency-rho.pdf'
+plt.savefig(path)
+print(f"Plot saved to {path}")
+
+socket_con.close()
