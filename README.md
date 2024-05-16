@@ -28,9 +28,9 @@ python3 test/iperf3_server.py
 ```
 ./run.sh tTest
 ```
-The result is printed into the console and then saved into a file [/results/throughput-rho.txt](/test/results/throughput-rho.txt), and a plot is produced at [plots/throughput-rho.png](/test/plots/throughput-rho.png) as such:
+The result is printed into the console and then saved into a file [/results/throughput-rho.txt](/test/results/throughput-rho.txt), and a plot is produced at [/plots/throughput-rho.png](/test/plots/throughput-rho.png) as such:
 
-![plots/throughput-rho.png](/test/plots/throughput-rho.png) 
+![throughput-rho.png](/test/plots/throughput-rho.png) 
 
 ---
 
@@ -46,6 +46,6 @@ python3 test/udp_server.py
 ./run.sh lTest
 ```
 
-The result is printed into the console and then saved into a file [/results/latency-rho.txt](/test/results/latency-rho.txt), and a plot is produced at [plots/latency-rho.png](/test/plots/latency-rho.png) as such:
+The result is printed into the console and then saved into a file [/results/latency-rho.txt](/test/results/latency-rho.txt), and a plot is produced at [/plots/latency-rho.png](/test/plots/latency-rho.png) as such:
 
 ![latency-rho.png](/test/plots/latency-rho.png)
