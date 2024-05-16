@@ -96,8 +96,8 @@ if __name__ == "__main__":
     rx.setPALevel(RF24_PA_LOW)
     tx.setPALevel(RF24_PA_LOW)
     
-    rx.set_retries(2, 3)
-    tx.set_retries(2, 3)
+    rx.set_retries(1, 2)
+    tx.set_retries(1, 2)
 
     if unit == 0:
       rx.setChannel(118)
