@@ -2,7 +2,7 @@ import time
 from pyrf24  import RF24, RF24_PA_LOW, RF24_2MBPS
 import threading
 from myQueue import Queue
-from pytun import TunTapDevice
+from pytun import TunTapDevice, IFF_NO_PI, IFF_TUN 
 import argparse
 
 PSIZE = 31
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     unit = argparse.parse_args().unit
 
     # Create the virtual interface 
-    tun = TunTapDevice(name='myG')
+    tun = TunTapDevice(name='myG', flags=IFF_TUN|IFF_NO_PI)
     tun.addr = f"10.0.0.{unit+1}"
     tun.dstaddr = f"10.0.0.{(not unit)+1}"
     tun.netmask="255.255.255.0"
