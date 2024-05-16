@@ -20,25 +20,25 @@ run the mobile station:
 ### Throughput test
 To run the throughput test, run the following scripts in the `/test` directory:
 
-1. Start the iperf3 server on the base station
+1. Start the iperf3 server on the base station:
 ```
-python3 iperf3_server.py
+python3 test/iperf3_server.py
 ```
-2. Start the test on the mobile station
+2. Start the test on the mobile station:
 ```
-python iperf3_client.py
+python test/iperf3_client.py 
 ```
-The result of each individual test is printed into the consoles, and a plot is produced at `/plots/throughput-rho.pdf`
+The result of each individual test is printed into the consoles, and a plot is produced at `plots/throughput-rho.png`
 
 ### Latency test
 To run the Latency test, run the following scripts in the `/test` directory:
 
-1. Start the iperf3 server on the base station
+1. Start the iperf3 server on the base station:
 ```
-python3 udp_server.py
+python3 test/udp_server.py
 ```
-2. Start the test on the mobile station
+2. Start the test on the mobile station:
 ```
-python udp_client.py
+python test/udp_client.py
 ```
-The result of each individual test is printed into the consoles, and a plot is produced at `/plots/latency-rho.pdf`
+The result of each individual test is printed into the consoles, and a plot is produced at `/plots/latency-rho.png`

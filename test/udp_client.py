@@ -1,3 +1,4 @@
+import os
 import matplotlib.pyplot as plt
 import socket
 import time
@@ -12,7 +13,7 @@ PORT = 12739
 LOWEST_TEST_SPEED = 2000
 NBR_OF_TESTS = 24
 NONE_OVERLOADED_RATIO = 2/3
-MAX_CAPACITY = 400000
+MAX_CAPACITY = 410000
 
 # Create a UDP socket
 socket_con = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -54,7 +55,7 @@ pairs = []
 for test in range(NBR_OF_TESTS):
     load = int(LOWEST_TEST_SPEED + test * speed_step)
     rho = load/MAX_CAPACITY
-    print(f"Begin Test {load/1000:.2f} Kbps (ρ = {rho:.2f})")
+    print(f"Begin Test for load {load/1000:.2f} Kbps (ρ = {rho:.2f})")
 
     avg_rtt = run_latency(load)
 
@@ -69,7 +70,7 @@ plt.title('Latency vs. Traffic Intensity (ρ)')
 plt.xlabel('Traffic Intensity (ρ)')
 plt.ylabel('Latency (ms)')
 plt.grid(True)
-path = 'plots/latency-rho.pdf'
+path = os.path.join(os.path.dirname(__file__),'plots/latency-rho.png')
 plt.savefig(path)
 print(f"Plot saved to {path}")
 
