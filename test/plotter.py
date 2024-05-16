@@ -3,6 +3,7 @@ import pickle
 import sys
 import matplotlib.pyplot as plt
 import argparse
+import pandas as pd
 
 def plot_throughput():
     try:
@@ -50,9 +51,13 @@ def plot_latency():
     except Exception as e:
         print(f"An error occurred while plotting latency: {e}")
 
+def plot_websites():
+    df = pd.read_csv(os.path.join(os.path.dirname(__file__),'results/performance_metrics.csv'))
+    print(df.to_string())
+    
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Test result plotter')
-    parser.add_argument('test', choices=['t', 'l'], help="Specify the type of test to plot. Valid options are 't' for throughput or 'l' for latency.")
+    parser.add_argument('test', choices=['t', 'l', 'w'], help="Specify the type of test to plot. Valid options are 't' for throughput test, 'w' for performance test or 'l' for latency test.")
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
@@ -64,5 +69,7 @@ if __name__ == "__main__":
         plot_throughput()
     elif test == "l":
         plot_latency()
+    elif test == "w":
+        plot_websites()
     else:
         print("No such test!")
