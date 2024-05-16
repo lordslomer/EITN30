@@ -6,6 +6,7 @@ from pytun import TunTapDevice
 import argparse
 
 PSIZE = 31
+CANCELBITS = 0xFE
 MAXBITS = 0xFF
 addresses = [b"B", b"M"]
 
@@ -30,7 +31,14 @@ def tx_sending():
       while tun_packet:
           if (tun_packet_size <= PSIZE):
               c = MAXBITS
-          tx.write(c.to_bytes(1, 'big') + tun_packet[:PSIZE])
+          result = tx.write(c.to_bytes(1, 'big') + tun_packet[:PSIZE])
+          if not result: 
+            cancled = False
+            while not cancled:
+              cancled = tx.write(CANCELBITS.to_bytes(1, 'big'))
+            tun_packet = []
+            tun_packet_size = 0
+            continue
           tun_packet = tun_packet[PSIZE:]
           tun_packet_size = len(tun_packet)
           c += 1
@@ -53,6 +61,8 @@ def rx_receiving():
         tun_packet = b''.join(buffer)
         buffer.clear()
         in_buffer.put(tun_packet)
+      elif c == CANCELBITS:
+        buffer.clear()
     time.sleep(1/7900)
 
 
