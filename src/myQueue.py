@@ -1,10 +1,10 @@
 import threading
 import time
+import queue
 
 class Queue:
   def __init__(self, name, verbose=False) -> None:
-    self.q = []
-    self.l = threading.Condition()
+    self.q = queue.Queue()
     self.verbose = verbose
     self.name = name
     self.t0_in =  time.time()
@@ -15,10 +15,7 @@ class Queue:
     self.ctn_in = 0
   
   def put(self, bytes):
-    # add packet and notify threads that are waiting
-    with self.l:
-      self.q.append(bytes)
-      self.l.notify_all()
+    self.q.put(bytes)
 
     # inc metrics
     t1 = time.time()
@@ -38,11 +35,7 @@ class Queue:
 
 
   def pop(self):
-    # wait until there is a packet to take 
-    with self.l:
-      while len(self.q) <= 0:
-        self.l.wait()
-      last = self.q.pop()
+    last = self.q.get()
 
     # inc metrics
     t1 = time.time()
