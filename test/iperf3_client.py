@@ -1,8 +1,6 @@
 import os
-import matplotlib.pyplot as plt
-import socket
+import pickle
 import iperf3
-import time
 
 SERVER_ADDR = '10.0.0.1'
 PORT = 12739
@@ -53,14 +51,7 @@ for test in range(NBR_OF_TESTS):
         print(f'  Client (Kbps):    {results.kbps:.2f}')
         print("")
 
-# Plot
-throughput, rho = zip(*pairs)
-plt.figure(figsize=(8, 6))
-plt.plot(rho, throughput, marker='o', linestyle='-', color='coral')
-plt.title('Throughput vs. Traffic Intensity (ρ)')
-plt.xlabel('Traffic Intensity (ρ)')
-plt.ylabel('Throughput (Kbps)')
-plt.grid(True)
-path = os.path.join(os.path.dirname(__file__),'plots/throughput-rho.png')
-plt.savefig(path)
-print(f"Plot saved to {path}")
+# Save paris to file
+with open(os.path.join(os.path.dirname(__file__),'results/throughput-rho.txt'), 'wb') as f:
+    pickle.dump(pairs,f)
+

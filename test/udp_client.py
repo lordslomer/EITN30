@@ -1,4 +1,5 @@
 import os
+import pickle
 import matplotlib.pyplot as plt
 import socket
 import time
@@ -62,16 +63,10 @@ for test in range(NBR_OF_TESTS):
     pairs.append((avg_rtt/1000,rho))
     print(f"Test done with an avg latency: {avg_rtt/1000:.2f} ms\n")
 
-# Plot
-latency, rho = zip(*pairs)
-plt.figure(figsize=(8, 6))
-plt.plot(rho, latency, marker='o', linestyle='-', color='coral')
-plt.title('Latency vs. Traffic Intensity (ρ)')
-plt.xlabel('Traffic Intensity (ρ)')
-plt.ylabel('Latency (ms)')
-plt.grid(True)
-path = os.path.join(os.path.dirname(__file__),'plots/latency-rho.png')
-plt.savefig(path)
-print(f"Plot saved to {path}")
+# Save paris to file
+with open(os.path.join(os.path.dirname(__file__),'results/latency-rho.txt'), 'wb') as f:
+    pickle.dump(pairs,f)
 
 socket_con.close()
+
+

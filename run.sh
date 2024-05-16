@@ -9,4 +9,12 @@ then
 elif [ $1 = "mobile" ]
 then
   sudo python3 src/main.py --unit 1
+elif [ $1 = "tTest" ]
+then
+  python3 test/iperf3_client.py
+  python3 test/plotter.py t
+elif [ $1 = "lTest" ]
+then
+  python test/udp_client.py
+  python3 test/plotter.py l
 fi
