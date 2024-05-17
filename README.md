@@ -35,9 +35,9 @@ The result is printed into the console and then saved into a file [/results/thro
 ---
 
 ### Latency test
-To run the Latency test, run the following scripts:
+To run the latency test, run the following scripts:
 
-1. Start the udp server on the base station:
+1. Start the UDP server on the base station:
 ```
 python3 test/udp_server.py
 ```
