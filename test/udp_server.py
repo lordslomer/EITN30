@@ -15,24 +15,32 @@ print(f"Server listening at {SERVER_ADDR}:{PORT}")
 def time_in_micro():
     return int(time.time() * 1000000)
 
-# Helper function micro seconds -> seconds
+# Helper function us -> s
 def micro_to_sec(micro):
     return micro / 1000000
 
+# List of round trip times
 RTTs =[]
 try:
     while True:
-        # Receive packets
+        # Receive packet 
         message, client_addr = socket_server.recvfrom(PACKET_SIZE) 
         header = message[:8]
 
+        # If end of test packet, calc avg_rtt and send it back
         if header == b"E" * 8:
+            # calc avg_rtt
             avg_rtt = int(sum(RTTs)/len(RTTs))
+
+            # create payload out of avg_rtt
             result_payload = avg_rtt.to_bytes(4, 'big')
+
+            # Send avg_rtt as test result
             socket_server.sendto(result_payload, client_addr)
             print(f"Test done with an avg latency: {avg_rtt/1000:.2f} ms\n")
             RTTs = []
         else:
+            # otherwise, inc RTT list with the packet's rtt. 
             timestamp = int.from_bytes(header, 'big')
             RTTs.append(time_in_micro() - timestamp)
 

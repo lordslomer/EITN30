@@ -11,10 +11,13 @@ server.port = PORT
 print("Waiting for the first test...")
 
 while True:
+    # Perfrom a test on client request
     results = server.run()
+
     if results.error:
         print(results.error)
     else:
+        # Print test results
         server_load = results.json['end']['sum_received']['bits_per_second']/1000
         print(f'Test completed:')
         print(f'  Started at:       {results.time}')
