@@ -7,16 +7,16 @@ OUTPUT_FILE="test/results/performance_metrics.csv"
 echo "Size,DNS Lookup,Connect,Start Transfer,Total,Size Downloaded" > $OUTPUT_FILE
 
 # Range of sizes to test
-START_SIZE=100
-END_SIZE=1000
-STEP_SIZE=100
+START_SIZE=100000
+END_SIZE=1000000
+STEP_SIZE=100000
 
 # Function to make the request and save the metrics
 measure_performance() {
     SIZE=$1
     METRICS=$(curl --interface myG -o /dev/null -s -w \
         "%{time_namelookup},%{time_connect},%{time_starttransfer},%{time_total},%{size_download}\n" \
-        http://eitn30.salamski.com/$SIZE)
+        10.0.0.1:8080/$SIZE)
     
     # Append the size and metrics to the CSV file
     echo "$SIZE,$METRICS" >> $OUTPUT_FILE
